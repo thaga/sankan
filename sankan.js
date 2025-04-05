@@ -1,7 +1,7 @@
 let auto_save_enabled = false;
 let ptable_active_range = 5;
 let display_attr_count = 2;
-let on_add_count = 3;
+let on_add_count = 2;
 
 let csv_file_handle = null;
 
