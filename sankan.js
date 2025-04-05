@@ -660,7 +660,8 @@ const create_sample = () => {
         }
     }
     // 友達を参加待機リストに追加
-    for (let i = 0; i < 8; ++i) add_plist(Math.trunc(Math.random()*7, Math.random() > 0.5));
+    const n = 7 + Math.trunc(Math.random()*5);
+    for (let i = 0; i < n; ++i) add_plist(Math.trunc(Math.random()*7), Math.random() < 0.3);
 }
 
 
