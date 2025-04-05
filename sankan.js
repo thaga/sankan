@@ -45,27 +45,7 @@ const csv_file_type = {
 };
 
 const init = () => {
-    // // 名簿読み込みボタン
-    // const load_text = document.createElement('div');
-    // load_text.textContent = '友達名簿読み込み';
-    // document.body.appendChild(load_text);
-
-    // const load_button = document.createElement('input');
-    // load_button.type = 'file';
-    // load_button.accept = 'text/csv';
-    // load_button.addEventListener('change', (event)=>{
-    //     const file = event.target.files[0];
-    //     const reader = new FileReader();
-    //     reader.onload = (e)=>{
-    //         const content = e.target.result;
-    //         parse_friend_csv(content);
-    //     };
-    //     reader.readAsText(file);
-    // });
-    // document.body.appendChild(load_button);
-
-
-    // document.body.appendChild(create_button('友達名簿読み込み', ()=>{load_flist();}));
+    // 友達名簿読み込みボタン
     document.body.appendChild(load_file_button);
 
     // オートセーブ
@@ -125,6 +105,10 @@ const init = () => {
     document.body.appendChild(ptable);
 
 
+    // サンプルデータの登録操作
+    create_sample();
+
+    
     // 両リストの構築
     build_ptable();
     build_ftable();
@@ -636,6 +620,47 @@ const save_flist = async () => {
 
 const auto_save = () => {
     if (auto_save_enabled) save_flist();
+}
+
+const create_sample = () => {
+    // とりあえず列を六つ追加
+    add_new_attrib();
+    add_new_attrib();
+    add_new_attrib();
+    add_new_attrib();
+    add_new_attrib();
+    add_new_attrib();
+    // 列の名前を登録
+    change_attrib(0, 'twitch名');
+    change_attrib(1, 'ゲーム1内の名前');
+    change_attrib(2, 'ゲーム2内の名前');
+    change_attrib(3, 'twitterアカウント');
+    change_attrib(4, 'BattleTag');
+    change_attrib(5, 'SteamID');
+    // 友達を7人ほど追加しておく
+    add_new_friend();
+    add_new_friend();
+    add_new_friend();
+    add_new_friend();
+    add_new_friend();
+    add_new_friend();
+    add_new_friend();
+    // 各データを適当に登録
+    for (let i = 0; i < 7; ++i) {
+        for (let j = 0; j < 6; ++j) {
+            switch (j) {
+                default: value = '';break;
+                case 0: value = 'つい'+(i+1)+'っち';break;
+                case 1: case 2: value = 'ゲ'+j+'ーマー'+(i+1);break;
+                case 3: value = '@account_name_'+(i+1);break;
+                case 4: value = 'ゲーマー#'+Math.trunc(Math.random()*9999);break;
+                case 5: value = Math.trunc(Math.random()*4200000000);break;
+            }
+            flist[i][friend_attrib_list[j]] = value;
+        }
+    }
+    // 友達を参加待機リストに追加
+    for (let i = 0; i < 8; ++i) add_plist(Math.trunc(Math.random()*7, Math.random() > 0.5));
 }
 
 
