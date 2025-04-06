@@ -289,6 +289,15 @@ const build_ptable = () => {
         if (y < 0) {
             pref_cell.textContent = '優先';
         } else {
+            pref_cell.onclick = ()=>{
+                if (plist[y].preferential) {
+                    pref_cell.textContent = '';
+                    plist[y].preferential = false;
+                } else {
+                    pref_cell.textContent = '〇';
+                    plist[y].preferential = true;
+                }
+            };
             if (plist[y].preferential) pref_cell.textContent =  '〇';
         }
 
