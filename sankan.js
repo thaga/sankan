@@ -110,8 +110,8 @@ const init = () => {
 
 
     // ファイルD&Dに対応
-    document.addEventListener('dragover', (e)=>{e.preventDefault();});
-    document.addEventListener('drop', (e)=>{e.preventDefault();drop_file(e);});
+    document.ondragover = (e)=>{e.preventDefault();};
+    document.ondrop = drop_file;
 
     
     // 両リストの構築
@@ -184,12 +184,33 @@ const build_ptable = () => {
     }
 }
 
+let ftable_dragging_row = -1;
+let ftable_building = 0;
+
 const build_ftable = () => {
+    ++ftable_building;
+
     // 内容クリア
-    while (ftable.rows.length > 0) ftable.deleteRow(0);
+    if (ftable_building<2) while (ftable.rows.length > 0) ftable.deleteRow(0);
 
     for (let y = -1; y < flist.length; ++y) {
         const row = ftable.insertRow();
+        
+        if (y < 0) {
+            row.style.border = '2px solid';
+        } else {
+            row.draggable = true;
+            row.ondragstart = (e)=>{document.ondrop=null;ftable_dragging_row=y;};
+            row.ondragend = (e)=>{document.ondrop = drop_file;ftable_dragging_row=-1;}
+            row.ondragenter = (e)=>{
+                e.preventDefault();
+                y2=ftable_dragging_row;
+                if (y < y2) row.style.borderTop='3px solid';
+                if (y > y2) row.style.borderBottom='3px solid';
+            };
+            row.ondragleave = (e)=>{e.preventDefault();row.style.borderTop='';row.style.borderBottom='';};
+            row.ondrop = (e)=>{e.preventDefault();move_flist(ftable_dragging_row, y);};
+        }
 
         // 先頭に追加する固定内容
         const add_cell = row.insertCell();
@@ -204,8 +225,8 @@ const build_ftable = () => {
         if (y < 0) {
             move_cell.textContent = '移動';
         } else {
-            move_cell.appendChild(create_button('↑', ()=>{swap_flist(y, y-1);}));
-            move_cell.appendChild(create_button('↓', ()=>{swap_flist(y, y+1);}));
+            move_cell.appendChild(create_button('↑', ()=>{move_flist(y, y-1);}));
+            move_cell.appendChild(create_button('↓', ()=>{move_flist(y, y+1);}));
         }
 
         // 友達内容追加
@@ -271,6 +292,8 @@ const build_ftable = () => {
             del_cell.appendChild(create_button('✖', ()=>{delete_friend(fi)}));
         }
     }
+
+    --ftable_building;
 }
 
 const set_autosave = (a) => {
@@ -328,6 +351,8 @@ const add_join_count = (n) => {
 }
 
 const swap_plist = (i, j) => {
+    console.log(i + ' _ ' + j);
+
     if (i < 0 || i >= plist.length) return;
     if (j < 0 || j >= plist.length) return;
     
@@ -406,15 +431,10 @@ const swap_attrib = (i, j) => {
     auto_save();
 }
 
-const swap_flist = (i, j) => {
-    if (i < 0 || i >= flist_order.length) return;
-    if (j < 0 || j >= flist_order.length) return;
-    
-    const l = Math.min(i, j);
-    const h = Math.max(i, j);
-    const o = flist_order[h];
-    flist_order.splice(h, 1);
-    flist_order.splice(l, 0, o);
+const move_flist = (from, to) => {
+    const f = flist_order[from];
+    flist_order.splice(from, 1);
+    flist_order.splice(to, 0, f);
 
     build_ftable();
 
@@ -599,6 +619,7 @@ const load_file = async () => {
 
 
 const drop_file = async (ev)=>{
+    ev.preventDefault();
     const [item] = ev.dataTransfer.items;
     const fhandle = await item.getAsFileSystemHandle();
     const file = await fhandle.getFile();
