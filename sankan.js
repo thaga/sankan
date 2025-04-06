@@ -177,8 +177,7 @@ const build_ftable = () => {
             cell.spellcheck = false;
             // Enterキーを押したら改行させないで内容確定
             cell.onkeydown = (e)=>{
-                if (e.key === 'Enter') {
-                    e.target.entered = true;
+                if (e.key === 'Enter' || e.key === 'Escape') {
                     e.target.blur(); // 内容確定（というかフォーカスを外すだけ）
                     return e.preventDefault(); // Enterキーを無効化
                 }
