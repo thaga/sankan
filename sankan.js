@@ -134,8 +134,10 @@ const build_ftable = () => {
         const row = ftable.insertRow();
         
         if (y < 0) {
+            // 先頭行はちょっと枠太く
             row.style.border = '2px solid';
         } else {
+            // 2行目以降はD&Dで行を移動できるようにしておく
             row.draggable = true;
             row.ondragstart = (e)=>{document.ondrop=null;ftable_dragging_row=y;};
             row.ondragend = (e)=>{document.ondrop = drop_file;ftable_dragging_row=-1;}
@@ -234,6 +236,8 @@ const build_ftable = () => {
 }
 
 
+let ptable_dragging_row = -1;
+
 const build_ptable = () => {
     // 内容クリア
     while (ptable.rows.length > 0) ptable.deleteRow(0);
@@ -242,26 +246,36 @@ const build_ptable = () => {
     for (let y = -1; y < plist.length; ++y) {
         const row = ptable.insertRow();
 
+        if (y < 0) {
+            // 先頭行はちょっと枠太く
+            row.style.border = '2px solid';
+        } else {
+            // 2行目以降はD&Dで行を移動できるようにしておく
+            row.draggable = true;
+            row.ondragstart = (e)=>{document.ondrop=null;ptable_dragging_row=y;};
+            row.ondragend = (e)=>{document.ondrop = drop_file;ptable_dragging_row=-1;}
+            row.ondragenter = (e)=>{
+                e.preventDefault();
+                y2=ptable_dragging_row;
+                if (y < y2) row.style.borderTop='3px solid';
+                if (y > y2) row.style.borderBottom='3px solid';
+            };
+            row.ondragleave = (e)=>{e.preventDefault();row.style.borderTop='';row.style.borderBottom='';};
+            row.ondrop = (e)=>{e.preventDefault();move_plist(ptable_dragging_row, y);};
+        }
+
+        // 同時参加枠には色を塗っておく
         if (y >= 0 && y < ptable_active_range) {
             row.style.backgroundColor = 'yellow';
         }
 
-        if (false) {
-            for (let x = 0; x < 10; ++x) {
-                const cell = row.insertCell();
-                const r = ['cell', 'a', 'random', '日本語', 'tekitounanagasa'];
-                const t = r[Math.trunc(Math.random() * r.length)];
-                cell.appendChild(document.createTextNode(`セル${t}${y}${x}`));
-            }
-        }
-
-        // 先頭に追加する固定内容
+        // 列の先頭に追加する固定内容
         const move_cell = row.insertCell();
         if (y < 0) {
             move_cell.textContent = '移動';
         } else {
-            move_cell.appendChild(create_button('↑', ()=>{swap_plist(y, y-1);}));
-            move_cell.appendChild(create_button('↓', ()=>{swap_plist(y, y+1);}));
+            move_cell.appendChild(create_button('↑', ()=>{move_plist(y, y-1);}));
+            move_cell.appendChild(create_button('↓', ()=>{move_plist(y, y+1);}));
         }
         const count_cell = row.insertCell();
         if (y < 0) {
@@ -289,7 +303,7 @@ const build_ptable = () => {
             }
         }
 
-        // 末尾に追加する固定内容
+        // 列末尾に追加する固定内容
         const del_cell = row.insertCell();
         if (y < 0) {
             del_cell.textContent = '削除';
@@ -297,6 +311,7 @@ const build_ptable = () => {
             del_cell.appendChild(create_button('✖', ()=>{delete_plist(y)}));
         }
     }
+
 }
 
 
@@ -354,17 +369,13 @@ const add_join_count = (n) => {
     join_count_div.appendChild(document.createTextNode(` ${on_add_count}`));
 }
 
-const swap_plist = (i, j) => {
-    console.log(i + ' _ ' + j);
+const move_plist = (from, to) => {
+    if (from < 0 || from >= plist.length) return;
+    if (to < 0 || to >= plist.length) return;
 
-    if (i < 0 || i >= plist.length) return;
-    if (j < 0 || j >= plist.length) return;
-    
-    const l = Math.min(i, j);
-    const h = Math.max(i, j);
-    const p = plist[h];
-    plist.splice(h, 1);
-    plist.splice(l, 0, p);
+    const p = plist[from];
+    plist.splice(from, 1);
+    plist.splice(to, 0, p);
 
     build_ptable();
 }
@@ -436,6 +447,9 @@ const swap_attrib = (i, j) => {
 }
 
 const move_flist = (from, to) => {
+    if (from < 0 || from >= flist_order.length) return;
+    if (to < 0 || to >= flist_order.length) return;
+
     const f = flist_order[from];
     flist_order.splice(from, 1);
     flist_order.splice(to, 0, f);
