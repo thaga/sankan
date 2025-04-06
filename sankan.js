@@ -15,7 +15,7 @@ const ptable = document.createElement('table');
 const create_button = (title, eh) => {
     const button = document.createElement('button');
     button.textContent = title;
-    button.addEventListener('click', eh);
+    button.onclick = eh;
     return button;
 }
 
@@ -133,6 +133,7 @@ const build_ftable = () => {
     for (let y = -1; y < flist.length; ++y) {
         const row = ftable.insertRow();
         
+        // rowの設定
         if (y < 0) {
             // 先頭行はちょっと枠太く
             row.style.border = '2px solid';
@@ -165,8 +166,10 @@ const build_ftable = () => {
         if (y < 0) {
             move_cell.textContent = '移動';
         } else {
-            move_cell.appendChild(create_button('↑', ()=>{move_flist(y, y-1);}));
-            move_cell.appendChild(create_button('↓', ()=>{move_flist(y, y+1);}));
+            // move_cell.appendChild(create_button('↑', ()=>{move_flist(y, y-1);}));
+            // move_cell.appendChild(create_button('↓', ()=>{move_flist(y, y+1);}));
+            move_cell.style.textAlign = 'center';
+            move_cell.textContent = '≡';
         }
 
         // 友達内容追加
@@ -297,15 +300,17 @@ const build_ptable = () => {
         if (y < 0) {
             move_cell.textContent = '移動';
         } else {
-            move_cell.appendChild(create_button('↑', ()=>{move_plist(y, y-1);}));
-            move_cell.appendChild(create_button('↓', ()=>{move_plist(y, y+1);}));
+            // move_cell.appendChild(create_button('↑', ()=>{move_plist(y, y-1);}));
+            // move_cell.appendChild(create_button('↓', ()=>{move_plist(y, y+1);}));
+            move_cell.style.textAlign = 'center';
+            move_cell.textContent = '≡';
         }
         const count_cell = row.insertCell();
         if (y < 0) {
             count_cell .textContent = 'カウント';
         } else {
-            count_cell.appendChild(create_button('+', ()=>{add_count(y, 1);}));
-            count_cell.appendChild(create_button('-', ()=>{add_count(y, -1);}));
+            count_cell.appendChild(create_button('＋', ()=>{add_count(y, 1);}));
+            count_cell.appendChild(create_button('ー', ()=>{add_count(y, -1);}));
             count_cell.appendChild(document.createTextNode(' ' + plist[y].count));
         }
         const pref_cell = row.insertCell();
@@ -355,7 +360,7 @@ const set_autosave = (a) => {
     const check = document.createElement('input');
     check.type = 'checkbox';
     check.checked = a;
-    check.addEventListener('click', (e)=>{auto_save_enabled = e.target.checked;});
+    check.onclick = (e)=>{auto_save_enabled = e.target.checked;};
 
     autosave_div.appendChild(document.createTextNode(`自動セーブ `));
     autosave_div.appendChild(check);
