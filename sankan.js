@@ -19,7 +19,7 @@ const create_button = (title, eh) => {
     return button;
 }
 
-const load_file_button = create_button('友達名簿読み込み', ()=>{load_flist();});
+const load_file_button = create_button('友達名簿読み込み', ()=>{load_file();});
 const autosave_div = document.createElement('div');
 const range_div = document.createElement('div');
 const attrib_div = document.createElement('div');
@@ -107,6 +107,11 @@ const init = () => {
 
     // サンプルデータの登録操作
     create_sample();
+
+
+    // ファイルD&Dに対応
+    document.addEventListener('dragover', (e)=>{e.preventDefault();});
+    document.addEventListener('drop', (e)=>{e.preventDefault();drop_file(e);});
 
     
     // 両リストの構築
@@ -582,8 +587,20 @@ const delete_attrib = (name)=>{
     auto_save();
 }
 
-const load_flist = async () => {
+const load_file = async () => {
     const [fhandle] = await window.showOpenFilePicker(csv_file_type);
+    const file = await fhandle.getFile();
+    const content = await file.text();
+    parse_friend_csv(content);
+
+    csv_file_handle = fhandle;
+    load_file_button.textContent = fhandle.name;
+}
+
+
+const drop_file = async (ev)=>{
+    const [item] = ev.dataTransfer.items;
+    const fhandle = await item.getAsFileSystemHandle();
     const file = await fhandle.getFile();
     const content = await file.text();
     parse_friend_csv(content);
