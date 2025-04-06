@@ -115,74 +115,11 @@ const init = () => {
 
     
     // 両リストの構築
-    build_ptable();
     build_ftable();
+    build_ptable();
 };
 
-const build_ptable = () => {
-    // 内容クリア
-    while (ptable.rows.length > 0) ptable.deleteRow(0);
 
-    // テーブルの内容作成
-    for (let y = -1; y < plist.length; ++y) {
-        const row = ptable.insertRow();
-
-        if (y >= 0 && y < ptable_active_range) {
-            row.style.backgroundColor = 'yellow';
-        }
-
-        if (false) {
-            for (let x = 0; x < 10; ++x) {
-                const cell = row.insertCell();
-                const r = ['cell', 'a', 'random', '日本語', 'tekitounanagasa'];
-                const t = r[Math.trunc(Math.random() * r.length)];
-                cell.appendChild(document.createTextNode(`セル${t}${y}${x}`));
-            }
-        }
-
-        // 先頭に追加する固定内容
-        const move_cell = row.insertCell();
-        if (y < 0) {
-            move_cell.textContent = '移動';
-        } else {
-            move_cell.appendChild(create_button('↑', ()=>{swap_plist(y, y-1);}));
-            move_cell.appendChild(create_button('↓', ()=>{swap_plist(y, y+1);}));
-        }
-        const count_cell = row.insertCell();
-        if (y < 0) {
-            count_cell .textContent = 'カウント';
-        } else {
-            count_cell.appendChild(create_button('+', ()=>{add_count(y, 1);}));
-            count_cell.appendChild(create_button('-', ()=>{add_count(y, -1);}));
-            count_cell.appendChild(document.createTextNode(' ' + plist[y].count));
-        }
-        const pref_cell = row.insertCell();
-        if (y < 0) {
-            pref_cell.textContent = '優先';
-        } else {
-            if (plist[y].preferential) pref_cell.textContent =  '〇';
-        }
-
-        // 友達内容
-        for (x = 0; x < display_attr_count && x < friend_attrib_list.length; ++x) {
-            const cell = row.insertCell();
-            const attr = friend_attrib_list[x];
-            if (y < 0) {
-                cell.textContent = attr;
-            } else {
-                cell.textContent = flist[plist[y].friend_index][attr] || '';
-            }
-        }
-
-        // 末尾に追加する固定内容
-        const del_cell = row.insertCell();
-        if (y < 0) {
-            del_cell.textContent = '削除';
-        } else {
-            del_cell.appendChild(create_button('✖', ()=>{delete_plist(y)}));
-        }
-    }
-}
 
 let ftable_dragging_row = -1;
 let ftable_building = 0;
@@ -295,6 +232,73 @@ const build_ftable = () => {
 
     --ftable_building;
 }
+
+
+const build_ptable = () => {
+    // 内容クリア
+    while (ptable.rows.length > 0) ptable.deleteRow(0);
+
+    // テーブルの内容作成
+    for (let y = -1; y < plist.length; ++y) {
+        const row = ptable.insertRow();
+
+        if (y >= 0 && y < ptable_active_range) {
+            row.style.backgroundColor = 'yellow';
+        }
+
+        if (false) {
+            for (let x = 0; x < 10; ++x) {
+                const cell = row.insertCell();
+                const r = ['cell', 'a', 'random', '日本語', 'tekitounanagasa'];
+                const t = r[Math.trunc(Math.random() * r.length)];
+                cell.appendChild(document.createTextNode(`セル${t}${y}${x}`));
+            }
+        }
+
+        // 先頭に追加する固定内容
+        const move_cell = row.insertCell();
+        if (y < 0) {
+            move_cell.textContent = '移動';
+        } else {
+            move_cell.appendChild(create_button('↑', ()=>{swap_plist(y, y-1);}));
+            move_cell.appendChild(create_button('↓', ()=>{swap_plist(y, y+1);}));
+        }
+        const count_cell = row.insertCell();
+        if (y < 0) {
+            count_cell .textContent = 'カウント';
+        } else {
+            count_cell.appendChild(create_button('+', ()=>{add_count(y, 1);}));
+            count_cell.appendChild(create_button('-', ()=>{add_count(y, -1);}));
+            count_cell.appendChild(document.createTextNode(' ' + plist[y].count));
+        }
+        const pref_cell = row.insertCell();
+        if (y < 0) {
+            pref_cell.textContent = '優先';
+        } else {
+            if (plist[y].preferential) pref_cell.textContent =  '〇';
+        }
+
+        // 友達内容
+        for (x = 0; x < display_attr_count && x < friend_attrib_list.length; ++x) {
+            const cell = row.insertCell();
+            const attr = friend_attrib_list[x];
+            if (y < 0) {
+                cell.textContent = attr;
+            } else {
+                cell.textContent = flist[plist[y].friend_index][attr] || '';
+            }
+        }
+
+        // 末尾に追加する固定内容
+        const del_cell = row.insertCell();
+        if (y < 0) {
+            del_cell.textContent = '削除';
+        } else {
+            del_cell.appendChild(create_button('✖', ()=>{delete_plist(y)}));
+        }
+    }
+}
+
 
 const set_autosave = (a) => {
 
@@ -675,16 +679,11 @@ const create_sample = () => {
     change_attrib(3, 'twitterアカウント');
     change_attrib(4, 'BattleTag');
     change_attrib(5, 'SteamID');
-    // 友達を7人ほど追加しておく
-    add_new_friend();
-    add_new_friend();
-    add_new_friend();
-    add_new_friend();
-    add_new_friend();
-    add_new_friend();
-    add_new_friend();
+    // 友達を7～9人ほど追加しておく
+    const f = 7 + Math.trunc(Math.random()*3);
+    for (let i = 0; i < f; ++i) add_new_friend();
     // 各データを適当に登録
-    for (let i = 0; i < 7; ++i) {
+    for (let i = 0; i < f; ++i) {
         for (let j = 0; j < 6; ++j) {
             switch (j) {
                 default: value = '';break;
