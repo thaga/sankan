@@ -140,15 +140,16 @@ const build_ftable = () => {
             // 2行目以降はD&Dで行を移動できるようにしておく
             row.draggable = true;
             row.ondragstart = (e)=>{document.ondrop=null;ftable_dragging_row=y;};
-            row.ondragend = (e)=>{document.ondrop = drop_file;ftable_dragging_row=-1;}
+            row.ondragend = (e)=>{document.ondrop=drop_file;ftable_dragging_row=-1;}
             row.ondragenter = (e)=>{
                 e.preventDefault();
-                y2=ftable_dragging_row;
-                if (y < y2) row.style.borderTop='3px solid';
-                if (y > y2) row.style.borderBottom='3px solid';
+                if (ftable_dragging_row >= 0) {
+                    if (y < ftable_dragging_row) row.style.borderTop='3px solid';
+                    if (y > ftable_dragging_row) row.style.borderBottom='3px solid';
+                }
             };
             row.ondragleave = (e)=>{e.preventDefault();row.style.borderTop='';row.style.borderBottom='';};
-            row.ondrop = (e)=>{e.preventDefault();move_flist(ftable_dragging_row, y);};
+            row.ondrop = (e)=>{e.preventDefault();if(ftable_dragging_row>=0)move_flist(ftable_dragging_row, y);};
         }
 
         // 先頭に追加する固定内容
@@ -249,19 +250,42 @@ const build_ptable = () => {
         if (y < 0) {
             // 先頭行はちょっと枠太く
             row.style.border = '2px solid';
+            row.ondragenter = (e)=>{
+                e.preventDefault();
+                // ftableからのD&Dも受け付ける
+                if (ftable_dragging_row >= 0) row.style.borderBottom='3px solid';
+            };
+            row.ondragleave = (e)=>{e.preventDefault();row.style.borderBottom='';};
+            row.ondrop = (e)=>{
+                e.preventDefault();
+                row.style.borderTop='';
+                row.style.borderBottom='';
+                // ftableからのD&Dも受け付ける
+                if (ftable_dragging_row >= 0) add_plist_to(flist_order[ftable_dragging_row], y+1);
+            };
         } else {
             // 2行目以降はD&Dで行を移動できるようにしておく
             row.draggable = true;
             row.ondragstart = (e)=>{document.ondrop=null;ptable_dragging_row=y;};
-            row.ondragend = (e)=>{document.ondrop = drop_file;ptable_dragging_row=-1;}
+            row.ondragend = (e)=>{document.ondrop=drop_file;ptable_dragging_row=-1;}
             row.ondragenter = (e)=>{
                 e.preventDefault();
-                y2=ptable_dragging_row;
-                if (y < y2) row.style.borderTop='3px solid';
-                if (y > y2) row.style.borderBottom='3px solid';
+                if (ptable_dragging_row >= 0) {
+                    if (y < ptable_dragging_row) row.style.borderTop='3px solid';
+                    if (y > ptable_dragging_row) row.style.borderBottom='3px solid';
+                }
+                // ftableからのD&Dも受け付ける
+                if (ftable_dragging_row >= 0) row.style.borderBottom='3px solid';
             };
             row.ondragleave = (e)=>{e.preventDefault();row.style.borderTop='';row.style.borderBottom='';};
-            row.ondrop = (e)=>{e.preventDefault();move_plist(ptable_dragging_row, y);};
+            row.ondrop = (e)=>{
+                e.preventDefault();
+                row.style.borderTop='';
+                row.style.borderBottom='';
+                if (ptable_dragging_row >= 0) move_plist(ptable_dragging_row, y);
+                // ftableからのD&Dも受け付ける
+                if (ftable_dragging_row >= 0) add_plist_to(flist_order[ftable_dragging_row], y+1);
+            };
         }
 
         // 同時参加枠には色を塗っておく
@@ -428,6 +452,18 @@ const add_plist = (i, pref) => {
         // 単純に最後に追加
         plist.push(p);
     }
+
+    build_ptable();
+}
+
+const add_plist_to = (fi, pi) => {
+    let p = {
+        friend_index : fi,
+        preferential : false,
+        count : on_add_count
+    };
+
+    plist.splice(pi, 0, p);
 
     build_ptable();
 }
