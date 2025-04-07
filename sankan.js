@@ -178,11 +178,15 @@ const build_ftable = () => {
             // 編集可能にしておく
             cell.contentEditable = true;
             cell.spellcheck = false;
-            // Enterキーを押したら改行させないで内容確定
+            // Enterキーを押したら改行させないで内容確定、ESCキーを押したら編集キャンセルにする
             cell.onkeydown = (e)=>{
-                if (e.key === 'Enter' || e.key === 'Escape') {
+                if (e.key === 'Enter') {
                     e.target.blur(); // 内容確定（というかフォーカスを外すだけ）
-                    return e.preventDefault(); // Enterキーを無効化
+                    e.preventDefault(); // Enterキーを無効化
+                }
+                if (e.key === 'Escape') {
+                    cell.textContent = (y<0?friend_attrib_list[x]:flist[flist_order[y]][friend_attrib_list[x]]) || '';  // ESCなら編集内容戻す
+                    e.target.blur(); // フォーカスを外す
                 }
             };
             if (y < 0) {
@@ -373,8 +377,8 @@ const add_range = (n) => {
     range_div.textContent = '';
 
     range_div.appendChild(document.createTextNode(`同時参加: `));
-    range_div.appendChild(create_button('+', ()=>{add_range(1);}));
-    range_div.appendChild(create_button('-', ()=>{add_range(-1);}));
+    range_div.appendChild(create_button('＋', ()=>{add_range(1);}));
+    range_div.appendChild(create_button('ー', ()=>{add_range(-1);}));
     range_div.appendChild(document.createTextNode(` ${ptable_active_range}`));
 
     build_ptable();
@@ -387,8 +391,8 @@ const add_attrib_count = (n) => {
     attrib_div.textContent = '';
 
     attrib_div.appendChild(document.createTextNode(`表示属性数: `));
-    attrib_div.appendChild(create_button('+', ()=>{add_attrib_count(1);}));
-    attrib_div.appendChild(create_button('-', ()=>{add_attrib_count(-1);}));
+    attrib_div.appendChild(create_button('＋', ()=>{add_attrib_count(1);}));
+    attrib_div.appendChild(create_button('ー', ()=>{add_attrib_count(-1);}));
     attrib_div.appendChild(document.createTextNode(` ${display_attr_count}`));
 
     build_ptable();
@@ -401,8 +405,8 @@ const add_join_count = (n) => {
     join_count_div.textContent = '';
 
     join_count_div.appendChild(document.createTextNode(`追加時付与カウント: `));
-    join_count_div.appendChild(create_button('+', ()=>{add_join_count(1);}));
-    join_count_div.appendChild(create_button('-', ()=>{add_join_count(-1);}));
+    join_count_div.appendChild(create_button('＋', ()=>{add_join_count(1);}));
+    join_count_div.appendChild(create_button('ー', ()=>{add_join_count(-1);}));
     join_count_div.appendChild(document.createTextNode(` ${on_add_count}`));
 }
 
