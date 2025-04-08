@@ -3,7 +3,7 @@
 動作確認はChromeのみです。
 
 # とりあえずのデモ
-→ https://thaga.github.io/sankan/sankan.html
+→ https://thaga.github.io/sankan/sankan.html  
 （以下↓の使い方の3.以降を操作してみてください）
 
 # とりあえずの使い方
