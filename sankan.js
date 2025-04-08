@@ -2,6 +2,8 @@ let auto_save_enabled = false;
 let ptable_active_range = 5;
 let display_attr_count = 2;
 let on_add_count = 2;
+const create_sample_data = true;
+
 
 let csv_file_handle = null;
 
@@ -106,7 +108,7 @@ const init = () => {
 
 
     // サンプルデータの登録操作
-    create_sample();
+    if (create_sample_data) create_sample();
 
 
     // ファイルD&Dに対応
@@ -513,12 +515,13 @@ const move_flist = (from, to) => {
 }
 
 const change_attrib = (i, value) => {
-    // 空文字列なら何もしない
-    if (value.length == 0) return;
-    // もしすでに存在するattribなら何もしない
-    for (let j = 0; j < friend_attrib_list.length; ++j) if (friend_attrib_list[j] == value) return;
-
     const from = friend_attrib_list[i]; // 元のattrib名
+    // 元のattrib名と同じなら何もしない
+    if (value == from) return;
+    // 空文字列なら何もしない
+    if (value.length == 0) {alert('空文字列は指定できません');return;}
+    // もしすでに存在するattribなら何もしない
+    for (let j = 0; j < friend_attrib_list.length; ++j) if (friend_attrib_list[j] == value) {alert('重複する列名は指定できません');return;}
 
     // flistを一通り更新
     for (let j = 0; j < flist.length; ++j) {
@@ -551,9 +554,17 @@ const parse_friend_csv = (data) => {
      // 内容を検証
     //-----------------
     // 一行も無かったら無効
-    if (csv.length == 0) return;
+    if (csv.length == 0) {alert('内容が無いよう');return false;}
     // 全部の行の列数が揃ってなかったら無効
-    for (let i = 1; i < csv.length; ++i) if (csv[i].length != csv[0].length) return;
+    for (let i = 1; i < csv.length; ++i) if (csv[i].length != csv[0].length) {alert('列数の異なる行があります');return false;}
+    // 一行目に空文字列があったら無効
+    for (let i = 0; i < csv[0].length; ++i) if (csv[0][i].length == 0) {alert('空の列名があります');return false;}
+    // 一行目に同じ内容の列があったら無効
+    for (let i = 0; i < csv[0].length; ++i) if (csv[0].indexOf(csv[0][i]) != i) {alert('列名の重複があります');return false;}
+
+    // flistとfriend_attrib_listを作り直し
+    flist.splice(0, flist.length);
+    friend_attrib_list.splice(0, friend_attrib_list.length);
 
      // csvからflistを作成する
     //----------------------------
@@ -577,6 +588,8 @@ const parse_friend_csv = (data) => {
 
     build_ftable();
     build_ptable();
+
+    return true;
 }
 
 const build_friend_csv = () => {
@@ -682,8 +695,10 @@ const load_file = async () => {
     const [fhandle] = await window.showOpenFilePicker(csv_file_type);
     const file = await fhandle.getFile();
     const content = await file.text();
-    parse_friend_csv(content);
 
+    if (!parse_friend_csv(content)) return;
+
+    // 読み込んだファイルのハンドルは保持しておく
     csv_file_handle = fhandle;
     load_file_button.textContent = fhandle.name;
 }
@@ -692,11 +707,17 @@ const load_file = async () => {
 const drop_file = async (ev)=>{
     ev.preventDefault();
     const [item] = ev.dataTransfer.items;
+    if (item.kind != 'file') {alert('CSVファイルをD&Dしてください');return;}
     const fhandle = await item.getAsFileSystemHandle();
+    if (fhandle.kind != 'file') {alert('CSVファイルをD&Dしてください');return;}
+    if (!fhandle.name.endsWith('.csv') && !fhandle.name.endsWith('.CSV')) {alert('CSVファイルをD&Dしてください');return;}
+    
     const file = await fhandle.getFile();
     const content = await file.text();
-    parse_friend_csv(content);
 
+    if (!parse_friend_csv(content)) return;
+
+    // 読み込んだファイルのハンドルは保持しておく
     csv_file_handle = fhandle;
     load_file_button.textContent = fhandle.name;
 }
