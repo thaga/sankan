@@ -3,11 +3,11 @@
 動作確認はChromeのみです。
 
 # とりあえずのデモ
-→ https://thaga.github.io/sankan/sankan.html  
+→ <https://thaga.github.io/sankan/sankan.html>  
 （以下↓の使い方の3.以降を操作してみてください）
 
 # とりあえずの使い方
-1. https://github.com/thaga/sankan の緑色の[<> Code v]のボタンから、Download ZIPでまとめてファイルを取得する
+1. <https://github.com/thaga/sankan> の緑色の[<> Code v]のボタンから、Download ZIPでまとめてファイルを取得する
 2. sankan.html をブラウザで開く
 3. 友達リストの中に表示されている[待機追加]列の、[通常]や[優先]ボタンを適当に押してみる
 4. 参加待機リストの中にある、カウント列の[+][-]ボタンを押してみる、優先列の空白または〇をクリックしてみる
