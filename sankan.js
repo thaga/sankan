@@ -1,7 +1,8 @@
 let auto_save_enabled = false;
-let ptable_active_range = 5;
-let display_attr_count = 2;
+let ptable_regular_num = 1;
+let ptable_guest_num = 4;
 let on_add_count = 2;
+let display_attr_count = 2;
 const create_sample_data = true;
 
 
@@ -21,9 +22,24 @@ const create_button = (title, eh) => {
     return button;
 }
 
+const create_plus_minus_count = (div, txt, handler) => {
+    // 一旦消去
+    div.textContent = '';
+
+    // 作り直し
+    div.appendChild(document.createTextNode(txt + `: `));
+    div.appendChild(create_button('＋', ()=>{handler(1);create_plus_minus_count(div, txt, handler);}));
+    div.appendChild(create_button('ー', ()=>{handler(-1);create_plus_minus_count(div, txt, handler);}));
+    div.appendChild(document.createTextNode(` ${handler(0)}`));
+
+    // ptable更新
+    build_ptable();
+}
+
 const load_file_button = create_button('友達名簿読み込み', ()=>{load_file();});
 const autosave_div = document.createElement('div');
-const range_div = document.createElement('div');
+const regular_div = document.createElement('div');
+const guest_div = document.createElement('div');
 const attrib_div = document.createElement('div');
 const join_count_div = document.createElement('div');
 const delete_attrib_name_input = document.createElement('input');
@@ -57,6 +73,7 @@ const init = () => {
     // ファイル操作関連ボタン
     const file_action_div = document.createElement('div');
     file_action_div.appendChild(create_button('名前を付けて名簿を保存', ()=>{saveas_flist();}));
+    file_action_div.appendChild(document.createTextNode(' '));
     file_action_div.appendChild(create_button('上書き保存', ()=>{save_flist();}));
     document.body.appendChild(file_action_div);
 
@@ -73,7 +90,9 @@ const init = () => {
     // 友達リスト操作関連ボタン
     const ftable_action_div = document.createElement('div');
     ftable_action_div.appendChild(create_button('新規の友達を追加', ()=>{add_new_friend();}));
+    ftable_action_div.appendChild(document.createTextNode(' '));
     ftable_action_div.appendChild(create_button('新規の列を追加', ()=>{add_new_attrib();}));
+    ftable_action_div.appendChild(document.createTextNode(' '));
     ftable_action_div.appendChild(create_button('名前を指定して列を削除', (e)=>{delete_attrib(delete_attrib_name_input.value);}));
     ftable_action_div.appendChild(delete_attrib_name_input);
     document.body.appendChild(ftable_action_div);
@@ -81,21 +100,27 @@ const init = () => {
     //-----------------------------------------------------------------------------
     document.body.appendChild(document.createElement('hr'));
 
-    // 同時参加できる数の設定
-    add_range(0);
-    document.body.appendChild(range_div);
+    // 常時参加する数の設定
+    create_plus_minus_count(regular_div, '常時参加数', add_regular);
+    document.body.appendChild(regular_div);
 
-    // 参加者テーブルに表示する友達の数
-    add_attrib_count(0);
-    document.body.appendChild(attrib_div);
+    // 同時参加できる数の設定
+    create_plus_minus_count(guest_div, 'ゲスト参加数', add_range);
+    document.body.appendChild(guest_div);
 
     // 参加者テーブルに追加するときに付与するカウント
-    add_join_count(0);
+    create_plus_minus_count(join_count_div, '追加時付与カウント', add_join_count);
     document.body.appendChild(join_count_div);
 
+    // 参加者テーブルに表示する友達の数
+    create_plus_minus_count(attrib_div, '表示属性数', add_attrib_count);
+    document.body.appendChild(attrib_div);
+
     // 同時参加者のカウントを一つ減らすボタン
-    document.body.appendChild(create_button('参加者のカウントを1減らす', (e)=>{range_dec();}));
+    document.body.appendChild(create_button('参加者のカウントを1減らす', (e)=>{guest_count_dec();}));
     
+    document.body.appendChild(document.createTextNode(' '));
+
     // カウントが0以下の参加者を削除するボタン
     document.body.appendChild(create_button('カウントが0以下の参加待機者を削除', (e)=>{delete_0();}));
 
@@ -296,9 +321,11 @@ const build_ptable = () => {
             };
         }
 
-        // 同時参加枠には色を塗っておく
-        if (y >= 0 && y < ptable_active_range) {
-            row.style.backgroundColor = 'yellow';
+        // 参加枠には色を塗っておく
+        if (y >= 0) {
+            if (y < ptable_regular_num) row.style.backgroundColor = 'cyan';
+            else
+            if (y < ptable_regular_num + ptable_guest_num) row.style.backgroundColor = 'yellow';
         }
 
         // 列の先頭に追加する固定内容
@@ -372,44 +399,24 @@ const set_autosave = (a) => {
     autosave_div.appendChild(check);
 }
 
-const add_range = (n) => {
-    ptable_active_range = Math.max(0, ptable_active_range + n);
-
-    // 一旦消去
-    range_div.textContent = '';
-
-    range_div.appendChild(document.createTextNode(`同時参加: `));
-    range_div.appendChild(create_button('＋', ()=>{add_range(1);}));
-    range_div.appendChild(create_button('ー', ()=>{add_range(-1);}));
-    range_div.appendChild(document.createTextNode(` ${ptable_active_range}`));
-
-    build_ptable();
+const add_regular = (n) => {
+    ptable_regular_num = Math.max(0, ptable_regular_num + n);
+    return ptable_regular_num;
 }
 
-const add_attrib_count = (n) => {
-    display_attr_count = Math.max(0, display_attr_count + n);
-
-    // 一旦消去
-    attrib_div.textContent = '';
-
-    attrib_div.appendChild(document.createTextNode(`表示属性数: `));
-    attrib_div.appendChild(create_button('＋', ()=>{add_attrib_count(1);}));
-    attrib_div.appendChild(create_button('ー', ()=>{add_attrib_count(-1);}));
-    attrib_div.appendChild(document.createTextNode(` ${display_attr_count}`));
-
-    build_ptable();
+const add_range = (n) => {
+    ptable_guest_num = Math.max(0, ptable_guest_num + n);
+    return ptable_guest_num;
 }
 
 const add_join_count = (n) => {
     on_add_count = Math.max(0, on_add_count + n);
+    return on_add_count;
+}
 
-    // 一旦消去
-    join_count_div.textContent = '';
-
-    join_count_div.appendChild(document.createTextNode(`追加時付与カウント: `));
-    join_count_div.appendChild(create_button('＋', ()=>{add_join_count(1);}));
-    join_count_div.appendChild(create_button('ー', ()=>{add_join_count(-1);}));
-    join_count_div.appendChild(document.createTextNode(` ${on_add_count}`));
+const add_attrib_count = (n) => {
+    display_attr_count = Math.max(0, display_attr_count + n);
+    return display_attr_count;
 }
 
 const move_plist = (from, to) => {
@@ -429,9 +436,9 @@ const add_count = (i, count) => {
     build_ptable();
 }
 
-const range_dec = () => {
-    // 最初のptable_active_range個のcountを減らす
-    for (let i = 0; i < ptable_active_range && i < plist.length; ++i) --plist[i].count;
+const guest_count_dec = () => {
+    // ゲスト参加者の範囲のcountを減らす
+    for (let i = ptable_regular_num; i < ptable_regular_num + ptable_guest_num && i < plist.length; ++i) --plist[i].count;
 
     build_ptable();
 }
@@ -453,8 +460,8 @@ const add_plist = (i, pref) => {
     if (pref) {
         // 優先の最後に追加
         let i = plist.length;
-        while (i > 0) {
-            if (plist[i-1].preferential || i == ptable_active_range) break;
+        while (i > ptable_regular_num + ptable_guest_num) {
+            if (plist[i-1].preferential) break;
             --i;
         }
         plist.splice(i, 0, p);
